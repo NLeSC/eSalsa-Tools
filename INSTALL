@@ -1,0 +1,12 @@
+The binary release of eSalsa Tools does not require any special installation.
+Simply unzip the distribution where you want. Then set the ESALSA_HOME 
+environment variable to this location. For easy access you may also want to 
+add "$ESALSA_HOME/scripts" location to your PATH. 
+
+This software requires Java SE 6.0 or higher (also known as Java 1.6). It has 
+not been tested with older versions.
+
+A version of Java can be obtained from:
+
+http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
