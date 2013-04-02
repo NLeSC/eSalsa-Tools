@@ -1,6 +1,6 @@
 <project name="eSalsa-Tools" default="build" basedir=".">
 
-    <property name="version" value="1.0" />
+    <property name="version" value="1.1" />
     <property name="prefix" value="esalsa-tools-${version}" />
     <property name="jar" value="${prefix}.jar" />
     <property name="zip" value="${prefix}.zip" />
@@ -9,14 +9,38 @@
     <property name="srcdir" value="./src" />
     <property name="builddir" value="./build" />
     <property name="distdir" value="./dist" />
-    <property name="javadoc" value="./docs/javadoc" />
+    <property name="javadoc" value="${distdir}/docs/javadoc" />
     <property name="build.sysclasspath" value="ignore"/>
 
-    <target name="copy">
+    <target name="prepare">
         <mkdir dir="${distdir}" />
+        <mkdir dir="${distdir}/lib" />
+        <mkdir dir="${distdir}/docs" />
+        <mkdir dir="${distdir}/scripts"/>
+        <mkdir dir="${distdir}/notices"/>
+
         <copy todir="${distdir}/lib">
-            <fileset dir="lib" />
+            <fileset dir="./lib" />
         </copy>
+
+        <copy todir="${distdir}/scripts">
+	    <fileset dir="./scripts"/>
+	</copy>
+
+        <chmod dir="${distdir}/scripts" perm="755" 
+	       includes="*.sh"/>
+    
+        <copy todir="${distdir}/notices">
+	    <fileset dir="./notices"/>
+	</copy>
+
+        <copy file="./docs/usersguide.pdf" todir="${distdir}/docs"/>
+
+        <copy file="README" todir="${distdir}"/>
+        <copy file="INSTALL" todir="${distdir}"/>
+        <copy file="HISTORY" todir="${distdir}"/>
+        <copy file="LICENSE" todir="${distdir}"/>
+        <copy file="NOTICE" todir="${distdir}"/>
     </target>
 
     <path id="default.classpath">
@@ -26,11 +50,9 @@
     </path>
 
     <!-- Compile eSalsa loadbalancer -->
-    <target name="compile">
+    <target name="compile" depends="prepare">
         <delete dir="${builddir}" />
         <mkdir dir="${builddir}" />
-        <mkdir dir="${distdir}" />
-        <mkdir dir="${distdir}/lib" />
 
         <javac destdir="${builddir}" srcdir="${srcdir}" target="1.6" source="1.6" debug="true" includes="nl/esciencecenter/esalsa/**/*.java" classpathref="default.classpath" />
 
@@ -41,32 +63,33 @@
         </jar>
     </target>
 
-    <target name="javadoc" description="Create javadocs">
+    <target name="javadoc" description="Create javadocs" depends="prepare">
         <!-- Create the javadoc -->
         <mkdir dir="${javadoc}" />
         <mkdir dir="${javadoc}/esalsa" />
+
         <javadoc destdir="${javadoc}/esalsa" access="public" sourcepath="src" windowtitle="eSalsa Tools Documentation" packagenames="nl.esciencecenter.esalsa.*" doctitle="eSalsa Tools ${version} Documentation" bottom="eSalsa Tools ${version}" classpathref="default.classpath">
 	    <link href="http://download.oracle.com/javase/1.6.0/docs/api/" />
         </javadoc>
     </target>
 
-    <target name="build" depends="clean,copy,compile,javadoc">
+    <target name="build" depends="clean,prepare,compile,javadoc">
     </target>
 
     <target name="bin.zip" depends="build">
         <delete failonerror="false" file="${zip}" />
 
         <zip destfile="${zip}">
-            <zipfileset dir="." prefix="${prefix}" includes="lib/**,*.properties,*.example,notices/**,README,INSTALL,LICENSE,HISTORY,docs/**" />
-            <zipfileset dir="." prefix="${prefix}" filemode="755" includes="scripts/**" />
+            <zipfileset dir="./dist" prefix="${prefix}" includes="notices/**,docs/**,lib/**,README,INSTALL,LICENSE,HISTORY,NOTICE" />
+            <zipfileset dir="./dist" prefix="${prefix}" filemode="755" includes="scripts/**" />
         </zip>
     </target>
 
-    <target name="src.zip" depends="build">
+    <target name="src.zip">
         <delete failonerror="false" file="${src-zip}" />
 
         <zip destfile="${src-zip}">
-            <zipfileset dir="." prefix="${prefix}" includes="src/**,lib/**,*.properties,*.example,notices/**,README,INSTALL,LICENSE,HISTORY,docs/**,build.xml" />
+            <zipfileset dir="." prefix="${prefix}" includes="src/**,lib/**,notices/**,docs/**,README,INSTALL,LICENSE,HISTORY,NOTICE,build.xml" />
             <zipfileset dir="." prefix="${prefix}" filemode="755" includes="scripts/**" />
         </zip>
     </target>
@@ -75,11 +98,10 @@
     <target name="clean" description="Removes the ${distdir} directory">
         <delete failonerror="false" dir="${builddir}" />
         <delete failonerror="false" dir="${distdir}" />
-        <delete failonerror="false" dir="${javadoc}" />
     </target>
 
     <target name="distclean" depends="clean">
-        <delete failonerror="false" dir="./build-eclipse" />
+        <delete failonerror="false" dir="./bin" />
         <delete failonerror="false" file="${zip}" />
         <delete failonerror="false" file="${src-zip}" />
     </target>
