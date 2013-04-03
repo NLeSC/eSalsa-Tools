@@ -58,55 +58,55 @@ public class DistributionViewer {
 	private static final Logger logger = LoggerFactory.getLogger(DistributionViewer.class);
 
 	/** The line color used for clusters */
-	private static final Color LINE_COLOR_CLUSTER = new Color(255,255,0,200);
-
+	private final Color LINE_COLOR_CLUSTER;
+	
 	/** The color used for cluster ocean halos */
-	private static final Color HALO_COLOR_CLUSTER = new Color(128, 64,  0, 96);
+	private final Color HALO_COLOR_CLUSTER = new Color(128, 64,  0, 96);
 
 	/** The color used for cluster land halos */
-	private static final Color LAND_COLOR_CLUSTER = new Color(0, 64,  128, 32);
+	private final Color LAND_COLOR_CLUSTER = new Color(0, 64,  128, 32);
 
 	/** The line width used for clusters */
-	private static final float LINE_WIDTH_CLUSTER = 15f;
+	private final float LINE_WIDTH_CLUSTER;
 
 	/** The line color used for nodes */
-	private static final Color LINE_COLOR_NODE = new Color(200,128,0,160);
-
+	private final Color LINE_COLOR_NODE;
+	
 	/** The color used for node ocean halos */
-	private static final Color HALO_COLOR_NODE = new Color(160, 80,  0, 160);
+	private final Color HALO_COLOR_NODE = new Color(160, 80,  0, 160);
 
 	/** The color used for node land halos */
-	private static final Color LAND_COLOR_NODE = new Color(0, 80,  160, 80);
+	private final Color LAND_COLOR_NODE = new Color(0, 80,  160, 80);
 
 	/** The line width used for nodes */
-	private static final float LINE_WIDTH_NODE = 11f;
+	private final float LINE_WIDTH_NODE;
 
 	/** The line color used for cores */	
-	private static final Color LINE_COLOR_CORE = new Color(225,0,0,160);
-
+	private final Color LINE_COLOR_CORE;
+	
 	/** The color used for core ocean halos */
-	private static final Color HALO_COLOR_CORE = new Color(255, 128,  0, 192);
+	private final Color HALO_COLOR_CORE = new Color(255, 128,  0, 192);
 
 	/** The color used for core land halos */
-	private static final Color LAND_COLOR_CORE = new Color(0, 128, 255, 128);
+	private final Color LAND_COLOR_CORE = new Color(0, 128, 255, 128);
 
 	/** The line width used for cores */
-	private static final float LINE_WIDTH_CORE = 5f;
+	private final float LINE_WIDTH_CORE;
 
 	/** The line color used for blocks */
-	private static final Color LINE_COLOR_BLOCK = new Color(128,128,128,50);
-
+	private final Color LINE_COLOR_BLOCK;
+	
 	/** The color used for block ocean halos */
-	private static final Color HALO_COLOR_BLOCK   = new Color(255, 128, 0, 255);
+	private final Color HALO_COLOR_BLOCK   = new Color(255, 128, 0, 255);
 
 	/** The color used for block land halos */
-	private static final Color LAND_COLOR_BLOCK   = new Color(0, 128, 255, 255);
+	private final Color LAND_COLOR_BLOCK   = new Color(0, 128, 255, 255);
 
 	/** The line width used for blocks */
-	private static final float LINE_WIDTH_BLOCK = 4f;
+	private final float LINE_WIDTH_BLOCK;
 
 	/** The color used for selected blocks */
-	private static final Color CENTER = new Color(255,0,0,210);
+	private final Color CENTER = new Color(255,0,0,210);
 
 	/** The distribution to show */ 
 	private final Distribution distribution;
@@ -163,10 +163,11 @@ public class DistributionViewer {
 	 * @param grid the grid to use. 
 	 * @param neighbours the function object use to determine block neighbors.
 	 * @param showGUI should the GUI be shown ?
+	 * @param highContrast should a highContrast image be used ?
 	 * @throws Exception if the DistributionViewer could not be initialized.
 	 */
-	public DistributionViewer(Distribution distribution, Topography topography, Grid grid, Neighbours neighbours, boolean showGUI) 
-			throws Exception {
+	public DistributionViewer(Distribution distribution, Topography topography, Grid grid, Neighbours neighbours, 
+			boolean showGUI, boolean highContrast) throws Exception {
 		
 		this.distribution = distribution;
 		this.topography = topography;
@@ -175,10 +176,46 @@ public class DistributionViewer {
 		this.layers = distribution.toLayers();
 
 		view = new TopographyCanvas(topography, grid);
+	
+		if (highContrast) {
+			view.addLayer("WORK");
+			
+			for (int y=0;y<grid.height;y++) { 
+				for (int x=0;x<grid.width;x++) { 
+					if (grid.get(x,y) == null) { 
+						view.fillBlock("WORK", x, y, Color.BLACK);
+					} else { 
+						view.fillBlock("WORK", x, y, Color.WHITE);
+					}
+				}
+			}
+			
+			LINE_COLOR_CLUSTER = new Color(255,255,0);		
+			LINE_COLOR_CORE = new Color(225,0,0);
+			LINE_COLOR_NODE = new Color(255,128,0); 
+			LINE_COLOR_BLOCK = new Color(128,128,128); 
+
+			LINE_WIDTH_CLUSTER = 17f;
+			LINE_WIDTH_NODE = 15f;
+			LINE_WIDTH_CORE = 10f;
+			LINE_WIDTH_BLOCK = 5f;
+			
+		} else { 
+			LINE_COLOR_CLUSTER = new Color(255,255,0,200);
+			LINE_COLOR_CORE = new Color(225,0,0,160);
+			LINE_COLOR_NODE = new Color(200,128,0,160);
+			LINE_COLOR_BLOCK = new Color(128,128,128,50);
+		
+			LINE_WIDTH_CLUSTER = 15f;
+			LINE_WIDTH_NODE = 11f;
+			LINE_WIDTH_CORE = 5f;
+			LINE_WIDTH_BLOCK = 4f;
+		}
+		
 		view.addLayer("BLOCKS");
-		view.addLayer("CLUSTERS");
-		view.addLayer("NODES");
 		view.addLayer("CORES");
+		view.addLayer("NODES");
+		view.addLayer("CLUSTERS");
 		view.addLayer("FILL");
 
 		if (showGUI) { 
@@ -575,21 +612,55 @@ public class DistributionViewer {
 					"\n" + 
 					"  topography_file     a topography file that contains the index of the deepest ocean level at " + 
 					"each gridpoint.\n" + 
-					"  distribution_file   a work distribution file.\n"); 		
+					"  distribution_file   a work distribution file.\n" + 
+					"  [--contrast]        color blocks according to work for high contrast image.\n" + 					
+					"  [--image image.png] store the result in a png image instead of showing it in a GUI.\n");
+
 			System.exit(1);
 		}
 
 		String topographyFile = args[0];
 		String distributionFile = args[1];
 
+		String output = null;
+		boolean highconstrast= false;
+		boolean showGUI = true;	
+		
+		int i=2;
+		
+		while (i<args.length) { 
+
+			if (args[i].equals("--contrast")) { 
+				highconstrast = true;
+				i++;
+				
+			} else if (args[i].equals("--image")) {
+				
+				if ((i+1) >= args.length) {
+					Utils.fatal("Option \"--image\" requires parameter!");
+				}
+					
+				output = args[i+1];
+				showGUI = false;
+				i += 2;
+				
+			} else { 
+				Utils.fatal("Unknown option " + args[i]);
+			}
+		}
+		
 		try { 			
 			Distribution d = new Distribution(distributionFile);
 			Topography t = new Topography(d.topographyWidth, d.topographyHeight, topographyFile);
 			Grid g = new Grid(t, d.blockWidth, d.blockHeight);
-			Neighbours n = new Neighbours(g, d.blockWidth, d.blockHeight, Neighbours.CYCLIC, Neighbours.TRIPOLE);			
-			DistributionViewer dv = new DistributionViewer(d, t, g, n, true);
-			
+			Neighbours n = new Neighbours(g, d.blockWidth, d.blockHeight, Neighbours.CYCLIC, Neighbours.TRIPOLE);
+	
+			DistributionViewer dv = new DistributionViewer(d, t, g, n, showGUI, highconstrast);
 			dv.drawAll();
+	
+			if (output != null) { 
+				dv.save(output);
+			}
 			
 		} catch (Exception e) {
 			Utils.fatal("Failed to run DistributionViewer ", e);

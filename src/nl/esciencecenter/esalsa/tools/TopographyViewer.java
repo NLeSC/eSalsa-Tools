@@ -54,9 +54,10 @@ public class TopographyViewer {
 					"  topography_width        the width of the topography.\n" + 
 					"  topography_height       the heigth of the topography.\n" +
 					"  [--blocks width height] divide the topology into blocks of width c height.\n" + 
-					"  [--showWork]            color blocks according to work.\n" + 					
-					"  [--image image.png]     store the result in a png image instead of showing it in a GUI.\n");
 			
+					"  [--contrast]            color blocks according to work for high contrast image.\n" + 					
+					"  [--image image.png]     store the result in a png image instead of showing it in a GUI.\n");
+
 			System.exit(1);
 		}
 
@@ -67,7 +68,7 @@ public class TopographyViewer {
 		int blockWidth = width;
 		int blockHeight = height;
 				
-		boolean showWork = false;
+		boolean highconstrast = false;
 		
 		String output = null;
 
@@ -85,8 +86,8 @@ public class TopographyViewer {
 				blockHeight = Utils.parseInt("block_height", args[i+2], 1);
 				i += 3;
 				
-			} else if (args[i].equals("--showWork")) { 
-				showWork = true;
+			} else if (args[i].equals("--constrast")) { 
+				highconstrast = true;
 				i++;
 				
 			} else if (args[i].equals("--image")) {
@@ -128,7 +129,7 @@ public class TopographyViewer {
 				tc.draw("LINES", new Line(new Coordinate(0,h), new Coordinate(g.width,h)), c, 7.0f);	
 			}
 
-			if (showWork) { 
+			if (highconstrast) { 
 				for (int y=0;y<g.height;y++) { 
 					for (int x=0;x<g.width;x++) { 
 						if (g.get(x,y) == null) { 

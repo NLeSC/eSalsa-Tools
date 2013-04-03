@@ -60,6 +60,9 @@ public class LoadBalancing {
 	/** Should we show the GUI ? */
 	private static boolean showGUI = false;
 	
+	/** Should we use a high-contrast image ? */
+	private static boolean highcontrast = false;
+	
 	/** Statistics to print */
 	private static String statistics = null;
 	
@@ -100,6 +103,7 @@ public class LoadBalancing {
 				" value for LAYER are CORES, NODES, CLUSTERS, ALL.\n" +
 				"   --method METHOD            method used to distribute the blocks. Valid values for METHOD are" + 
 				" SIMPLE, ROUGHLYRECT, and SEARCH. Default is ROUGHLYRECT.\n" + 				
+				"   --contrast                 color blocks according to work for a high contrast image.\n" + 		
 				"   --showgui                  show a graphical interface that allows the user to explore the distribution.\n" + 		
 				"   --help                     show this help.");
 		
@@ -126,7 +130,7 @@ public class LoadBalancing {
 			
 			if (showGUI || outputImage != null) {
 
-				DistributionViewer sv = new DistributionViewer(distribution, topography, grid, neighbours, showGUI);					
+				DistributionViewer sv = new DistributionViewer(distribution, topography, grid, neighbours, showGUI, highcontrast);					
 				sv.drawBlocks();
 					
 				if (clusters > 1) { 
@@ -240,6 +244,10 @@ public class LoadBalancing {
 				showGUI = true;
 				index++;
 			
+			} else if (args[index].equals("--constrast")) { 
+				highcontrast = true;
+				index++;
+				
 			} else if (args[index].equals("--help")) { 
 				usage();
 				
