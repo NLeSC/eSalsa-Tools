@@ -68,7 +68,7 @@ public class TopographyViewer {
 		int blockWidth = width;
 		int blockHeight = height;
 				
-		boolean highconstrast = false;
+		boolean highcontrast = false;
 		
 		String output = null;
 
@@ -86,8 +86,8 @@ public class TopographyViewer {
 				blockHeight = Utils.parseInt("block_height", args[i+2], 1);
 				i += 3;
 				
-			} else if (args[i].equals("--constrast")) { 
-				highconstrast = true;
+			} else if (args[i].equals("--contrast")) { 
+				highcontrast = true;
 				i++;
 				
 			} else if (args[i].equals("--image")) {
@@ -129,7 +129,7 @@ public class TopographyViewer {
 				tc.draw("LINES", new Line(new Coordinate(0,h), new Coordinate(g.width,h)), c, 7.0f);	
 			}
 
-			if (highconstrast) { 
+			if (highcontrast) { 
 				for (int y=0;y<g.height;y++) { 
 					for (int x=0;x<g.width;x++) { 
 						if (g.get(x,y) == null) { 
